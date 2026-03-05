@@ -16,6 +16,7 @@
 #include "lotus-version.h"
 
 #include <algorithm>
+#include <fcitx-utils/i18n.h>
 #include <fcntl.h>
 
 #include <cstdlib>
@@ -258,6 +259,18 @@ namespace fcitx {
         }));
         uiManager.registerAction("lotus-freemarking", freeMarkingAction_.get());
 
+        ddFreeStyleAction_ = std::make_unique<SimpleAction>();
+        ddFreeStyleAction_->setLongText(_("Allow dd to produce đ when Auto non-VN restore is On"));
+        ddFreeStyleAction_->setIcon("text-x-generic");
+        ddFreeStyleAction_->setCheckable(true);
+        connections_.emplace_back(ddFreeStyleAction_->connect<SimpleAction::Activated>([this](InputContext* ic) {
+            config_.ddFreeStyle.setValue(!*config_.ddFreeStyle);
+            saveConfig();
+            refreshOption();
+            updateDdFreeStyleAction(ic);
+        }));
+        uiManager.registerAction("lotus-ddfreestyle", ddFreeStyleAction_.get());
+
         fixUinputWithAckAction_ = std::make_unique<SimpleAction>();
         fixUinputWithAckAction_->setLongText(_("Fix uinput mode with ack"));
         fixUinputWithAckAction_->setIcon("network-transmit-receive");
@@ -353,6 +366,7 @@ namespace fcitx {
         updateAutoNonVnRestoreAction(nullptr);
         updateModernStyleAction(nullptr);
         updateFreeMarkingAction(nullptr);
+        updateDdFreeStyleAction(nullptr);
         updateFixUinputWithAckAction(nullptr);
         updateLotusIconsAction(nullptr);
     }
@@ -395,7 +409,7 @@ namespace fcitx {
         if (ic->capabilityFlags().test(CapabilityFlag::Preedit))
             instance_->inputContextManager().setPreeditEnabledByDefault(true);
 
-        std::string appName = ic->program();
+        std::string appName = getProgramName(ic);
         LotusMode   targetMode;
 
         if (!appRules_.empty() && appRules_.count(appName)) {
@@ -442,6 +456,7 @@ namespace fcitx {
         statusArea.addAction(StatusGroup::InputMethod, autoNonVnRestoreAction_.get());
         statusArea.addAction(StatusGroup::InputMethod, modernStyleAction_.get());
         statusArea.addAction(StatusGroup::InputMethod, freeMarkingAction_.get());
+        statusArea.addAction(StatusGroup::InputMethod, ddFreeStyleAction_.get());
         statusArea.addAction(StatusGroup::InputMethod, fixUinputWithAckAction_.get());
         statusArea.addAction(StatusGroup::InputMethod, lotusIconsAction_.get());
     }
@@ -590,9 +605,7 @@ namespace fcitx {
         }
 
         if (!keyEvent.isRelease() && !config_.modeMenuKey->empty() && keyEvent.key().checkKeyList(*config_.modeMenuKey)) {
-            currentConfigureApp_ = ic->program();
-            if (currentConfigureApp_.empty())
-                currentConfigureApp_ = "unknown-app";
+            currentConfigureApp_ = getProgramName(ic);
             g_mouse_clicked.store(false, std::memory_order_relaxed);
             showAppModeMenu(ic);
             keyEvent.filterAndAccept();
@@ -750,6 +763,14 @@ namespace fcitx {
         }
     }
 
+    void LotusEngine::updateDdFreeStyleAction(InputContext* ic) {
+        ddFreeStyleAction_->setChecked(*config_.ddFreeStyle);
+        ddFreeStyleAction_->setShortText(*config_.ddFreeStyle ? _("Dd -> Đ: On") : _("Dd -> Đ: Off"));
+        if (ic) {
+            ddFreeStyleAction_->update(ic);
+        }
+    }
+
     void LotusEngine::updateFixUinputWithAckAction(InputContext* ic) {
         fixUinputWithAckAction_->setChecked(*config_.fixUinputWithAck);
         fixUinputWithAckAction_->setShortText(*config_.fixUinputWithAck ? _("Fix Uinput With Ack: On") : _("Fix Uinput With Ack: Off"));
@@ -883,7 +904,9 @@ namespace fcitx {
         }
     }
 
-    std::string LotusEngine::overrideIcon(const InputMethodEntry& /*entry*/) {
+    std::string LotusEngine::subModeIconImpl(const InputMethodEntry& entry, InputContext& inputContext) {
+        FCITX_UNUSED(entry);
+        FCITX_UNUSED(inputContext);
         if (!*config_.useLotusIcons) {
             switch (realMode) {
                 case LotusMode::Off: return "fcitx-lotus-off-default";
@@ -898,4 +921,20 @@ namespace fcitx {
         }
     }
 
+    std::string LotusEngine::subModeLabelImpl(const InputMethodEntry& entry, InputContext& inputContext) {
+        FCITX_UNUSED(entry);
+        FCITX_UNUSED(inputContext);
+        switch (realMode) {
+            case LotusMode::Off: return _("Lotus - Off");
+            case LotusMode::Emoji: return "😄";
+            default: return "🪷";
+        }
+    }
+
+    std::string LotusEngine::getProgramName(InputContext* ic) {
+        std::string programName = ic->program();
+        if (programName.empty())
+            programName = "unknown-app";
+        return programName;
+    }
 } // namespace fcitx

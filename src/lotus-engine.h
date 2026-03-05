@@ -42,7 +42,7 @@ namespace fcitx {
      * Handles input processing, configuration management, and UI actions.
      * Implements fcitx InputMethodEngine interface.
      */
-    class LotusEngine final : public InputMethodEngine {
+    class LotusEngine final : public InputMethodEngineV2 {
       public:
         /**
          * @brief Gets the fcitx instance.
@@ -133,11 +133,20 @@ namespace fcitx {
         std::string subMode(const InputMethodEntry& entry, InputContext& inputContext) override;
 
         /**
-         * @brief Gets the override icon name.
+         * @brief Sets the current sub-mode icon.
          * @param entry Input method entry.
+         * @param inputContext Current input context.
          * @return Icon name string.
          */
-        std::string overrideIcon(const InputMethodEntry& entry) override;
+        std::string subModeIconImpl(const InputMethodEntry& entry, InputContext& inputContext) override;
+
+        /**
+         * @brief Sets the current sub-mode label.
+         * @param entry Input method entry.
+         * @param inputContext Current input context.
+         * @return Label string.
+         */
+        std::string subModeLabelImpl(const InputMethodEntry& entry, InputContext& inputContext) override;
 
         /**
          * @brief Gets the current configuration.
@@ -229,6 +238,12 @@ namespace fcitx {
         void updateFreeMarkingAction(InputContext* ic);
 
         /**
+         * @brief Updates the dd free style action UI.
+         * @param ic Current input context.
+         */
+        void updateDdFreeStyleAction(InputContext* ic);
+
+        /**
          * @brief Updates the fix uinput with ACK action UI.
          * @param ic Current input context.
          */
@@ -293,6 +308,13 @@ namespace fcitx {
          */
         void setMode(LotusMode mode, InputContext* ic);
 
+        /**
+         * @brief Get name of current program
+         * @param ic Current input context.
+         * @return Name of current program
+         */
+        std::string getProgramName(InputContext* ic);
+
       private:
         Instance*                                        instance_;
         lotusConfig                                      config_;
@@ -320,6 +342,7 @@ namespace fcitx {
         std::unique_ptr<SimpleAction>                    autoNonVnRestoreAction_;
         std::unique_ptr<SimpleAction>                    modernStyleAction_;
         std::unique_ptr<SimpleAction>                    freeMarkingAction_;
+        std::unique_ptr<SimpleAction>                    ddFreeStyleAction_;
         std::unique_ptr<SimpleAction>                    fixUinputWithAckAction_;
         std::unique_ptr<SimpleAction>                    lotusIconsAction_;
         std::unique_ptr<SimpleAction>                    versionAction_;

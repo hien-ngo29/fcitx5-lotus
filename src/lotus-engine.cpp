@@ -217,6 +217,12 @@ namespace fcitx {
         }
         appRulesPath_ = configDir + "/lotus-app-rules.conf";
         loadAppRules();
+        toggleActions_ = {
+            versionAction_.get(),     modeAction_.get(),        inputMethodAction_.get(),     charsetAction_.get(),
+            spellCheckAction_.get(),  macroAction_.get(),       capitalizeMacroAction_.get(), autoNonVnRestoreAction_.get(),
+            modernStyleAction_.get(), freeMarkingAction_.get(), ddFreeStyleAction_.get(),     fixUinputWithAckAction_.get(),
+            lotusIconsAction_.get(),
+        };
     }
 
     void LotusEngine::initToggleAction(std::unique_ptr<SimpleAction>& action, Option<bool>& option, const std::string& actionId, const std::string& iconName,
@@ -374,20 +380,9 @@ namespace fcitx {
         ic->inputPanel().reset();
         ic->updateUserInterface(UserInterfaceComponent::InputPanel);
         ic->updatePreedit();
-
-        statusArea.addAction(StatusGroup::InputMethod, versionAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, modeAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, inputMethodAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, charsetAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, spellCheckAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, macroAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, capitalizeMacroAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, autoNonVnRestoreAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, modernStyleAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, freeMarkingAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, ddFreeStyleAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, fixUinputWithAckAction_.get());
-        statusArea.addAction(StatusGroup::InputMethod, lotusIconsAction_.get());
+        for (const auto& action : toggleActions_) {
+            statusArea.addAction(StatusGroup::InputMethod, action);
+        }
     }
 
     void LotusEngine::keyEvent(const InputMethodEntry& entry, KeyEvent& keyEvent) {

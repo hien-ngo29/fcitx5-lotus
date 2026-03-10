@@ -428,13 +428,7 @@ namespace fcitx {
                     if (kl.size() == 1 && !kl[0].hasModifier()) {
                         std::string charStr = Key::keySymToUTF8(kl[0].sym());
                         if (!charStr.empty()) {
-                            KeySym hotkeySym = kl[0].sym();
-                            bool conflicts = hotkeySym == FcitxKey_1 || hotkeySym == FcitxKey_2 || hotkeySym == FcitxKey_3 || hotkeySym == FcitxKey_4 || hotkeySym == FcitxKey_q ||
-                                hotkeySym == FcitxKey_w || hotkeySym == FcitxKey_e || hotkeySym == FcitxKey_r || hotkeySym == FcitxKey_Escape || hotkeySym == FcitxKey_Tab ||
-                                hotkeySym == FcitxKey_Return || hotkeySym == FcitxKey_space || hotkeySym == FcitxKey_Up || hotkeySym == FcitxKey_Down ||
-                                hotkeySym == FcitxKey_ISO_Left_Tab;
-                            KeySym typeKeySym = conflicts ? FcitxKey_f : hotkeySym;
-                            if (keySym == typeKeySym) {
+                            if (keySym == typeKeyForModeMenuHotkey(kl[0].sym())) {
                                 isSelectingAppMode_ = false;
                                 ic->inputPanel().reset();
                                 ic->updateUserInterface(UserInterfaceComponent::InputPanel);
@@ -585,6 +579,34 @@ namespace fcitx {
         file.close();
     }
 
+    // Returns the KeySym that triggers the "Type hotkey char" action in the mode
+    // menu.  If the hotkey itself conflicts with a reserved menu key, falls back
+    // to FcitxKey_f.
+    static bool isAppModeMenuReservedKey(KeySym sym) {
+        switch (sym) {
+            case FcitxKey_1:
+            case FcitxKey_2:
+            case FcitxKey_3:
+            case FcitxKey_4:
+            case FcitxKey_q:
+            case FcitxKey_w:
+            case FcitxKey_e:
+            case FcitxKey_r:
+            case FcitxKey_Escape:
+            case FcitxKey_Tab:
+            case FcitxKey_ISO_Left_Tab:
+            case FcitxKey_Return:
+            case FcitxKey_space:
+            case FcitxKey_Up:
+            case FcitxKey_Down: return true;
+            default: return false;
+        }
+    }
+
+    static KeySym typeKeyForModeMenuHotkey(KeySym hotkeySym) {
+        return isAppModeMenuReservedKey(hotkeySym) ? FcitxKey_f : hotkeySym;
+    }
+
     void LotusEngine::closeAppModeMenu() {
         isSelectingAppMode_ = false;
         g_mouse_clicked.store(false, std::memory_order_relaxed);
@@ -649,12 +671,11 @@ namespace fcitx {
             if (kl.size() == 1 && !kl[0].hasModifier()) {
                 std::string charStr = Key::keySymToUTF8(kl[0].sym());
                 if (!charStr.empty()) {
-                    KeySym hotkeySym = kl[0].sym();
-                    bool   conflicts = hotkeySym == FcitxKey_1 || hotkeySym == FcitxKey_2 || hotkeySym == FcitxKey_3 || hotkeySym == FcitxKey_4 || hotkeySym == FcitxKey_q ||
-                        hotkeySym == FcitxKey_w || hotkeySym == FcitxKey_e || hotkeySym == FcitxKey_r || hotkeySym == FcitxKey_Escape || hotkeySym == FcitxKey_Tab ||
-                        hotkeySym == FcitxKey_Return || hotkeySym == FcitxKey_space || hotkeySym == FcitxKey_Up || hotkeySym == FcitxKey_Down || hotkeySym == FcitxKey_ISO_Left_Tab;
-                    std::string typeKeyLabel = conflicts ? "F" : charStr;
-                    std::string label        = "[" + typeKeyLabel + "] " + _("Type") + " '" + charStr + "'";
+                    KeySym      typeKeySym   = typeKeyForModeMenuHotkey(kl[0].sym());
+                    std::string typeKeyLabel = Key::keySymToUTF8(typeKeySym);
+                    if (typeKeyLabel.size() == 1 && typeKeyLabel[0] >= 'a' && typeKeyLabel[0] <= 'z')
+                        typeKeyLabel[0] = static_cast<char>(typeKeyLabel[0] - 32);
+                    std::string label = "[" + typeKeyLabel + "] " + _("Type") + " '" + charStr + "'";
                     candidateList->append(std::make_unique<AppModeCandidateWord>(Text(label), [cleanup, charStr](InputContext* ic) {
                         cleanup(ic);
                         ic->commitString(charStr);

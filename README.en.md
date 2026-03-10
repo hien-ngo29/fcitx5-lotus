@@ -481,25 +481,28 @@ Add this line to file `~/.config/kanata/kanata.kbd`
 
 - **Access:** Right-click the Lotus icon on the system tray to open customization.
 
-| Option                  | Description                                                                                                                    | Default         |
-| :---------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :-------------- |
-| **Typing Mode**         | Select typing mode.                                                                                                            | Uinput (Smooth) |
-| **Input Method**        | Select input method.                                                                                                           | Telex           |
-| **Charset**             | Select character set.                                                                                                          | Unicode         |
-| **Spell Check**         | Enable/disable Vietnamese spell checking.                                                                                      | On              |
-| **Macro**               | Enable/disable shorthand typing.                                                                                               | On              |
-| **Capitalize Macro**    | Enable/disable uppercase shorthand typing.                                                                                     | On              |
-| **Auto non-VN restore** | Enable/disable auto-restore for non-Vietnamese words.                                                                          | On              |
-| **Modern Style**        | Enable/disable modern tone mark placement style _(e.g. oà, *uý instead of òa, *úy)_.                                           | On              |
-| **Free Marking**        | Enable/disable free tone marking.                                                                                              | On              |
-| **Dd Free Style**       | Enable/disable allowing "dd" to produce "đ" when _Auto non-VN restore_ is On                                                   | On              |
-| **Fix Uinput with ack** | Enable/disable fixing Uinput mode with ack.<br/>Recommended when using Chromium-based applications (Chrome, Brave, Edge, ...). | Off             |
-| **Lotus Icons**         | Enable/disable using Lotus icons instead of the default V E icons.                                                             | Off             |
+| Option                  | Description                                           | Default |
+| :---------------------- | :---------------------------------------------------- | :------ |
+| **Charset**             | Select character set.                                 | Unicode |
+| **Spell Check**         | Enable/disable Vietnamese spell checking.             | On      |
+| **Macro**               | Enable/disable shorthand typing.                      | On      |
+| **Capitalize Macro**    | Enable/disable uppercase shorthand typing.            | On      |
+| **Auto non-VN restore** | Enable/disable auto-restore for non-Vietnamese words. | On      |
 
 - Alternatively, you can right-click the Lotus icon in the system tray -> **Input Method Settings** -> Select **Lotus** -> **Configure** (the gear icon in the middle of the _Fcitx Configuration_ interface) to customize some additional options in detail, such as:
   - Macro: click the gear icon next to the _Input Method_ selection row to open the interface for adding or removing macros for the current input method. **Note:** shorthand entries only take effect for the selected input method. If you want to apply them to another input method, switch to that method and re-add the shorthand entries from scratch.
   - Custom Keymap: click the gear icon on the _Custom Keymap_ row to open the keymap customization interface. You can import a keymap from an existing input method or create your own. After customizing, select the **Custom** input method to apply your custom keymap.
   - Mode menu hotkey: by default, this menu uses the `` ` `` key to open the menu in all applications. If your workflow frequently uses this key, or you simply prefer a different key, click the hotkey selection button next to the _Mode menu hotkey_ option to enter your preferred shortcut. You can also click the `+` button to add additional hotkeys if desired.
+  - Some options have been moved from the taskbar menu to Fcitx5 configuration to simplify:
+    | Option | Description | Default |
+    | :---------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :-------------- |
+    | **Mode** | Select typing mode. | Uinput (Smooth) |
+    | **Input Method** | Select input method. | Telex |
+    | **Use oà, uý (Instead Of òa, úy)** | Enable/disable modern tone mark placement style _(e.g. oà, *uý instead of òa, *úy)_. | On |
+    | **Allow Type With More Freedom** | Enable/disable free tone marking. | On |
+    | **Allow dd To Produce đ When Auto Restore Keys With Invalid Words Is On** | Enable/disable allowing "dd" to produce "đ" when _Auto non-VN restore_ is On | On |
+    | **Fix Uinput Mode With Ack** | Enable/disable fixing Uinput mode with ack.<br/>Recommended when using Chromium-based applications (Chrome, Brave, Edge, ...). | Off |
+    | **Use Lotus Status Icons** | Enable/disable using Lotus icons instead of the default V E icons. | Off |
 
 ### 2. Typing mode menu
 

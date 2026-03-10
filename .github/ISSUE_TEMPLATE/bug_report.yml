@@ -111,7 +111,7 @@ body:
     attributes:
       label: Diagnose
       description: |
-        Log của uinput server (Lấy ở `/tmp/fcitx5-lotus-server.log`)
+        Log của uinput server (Lấy ở `/tmp/fcitx5-lotus-server.log`, tốt nhất nên dừng dịch vụ trước khi lấy log)
       render: shell
 
   - type: textarea

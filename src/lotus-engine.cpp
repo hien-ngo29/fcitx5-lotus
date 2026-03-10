@@ -125,11 +125,11 @@ namespace fcitx {
         }
         config_.outputCharset.annotation().setList(charsets);
 
-        initToggleAction(spellCheckAction_, config_.spellCheck, "lotus-spellcheck", "tools-check-spelling", _("Enable spell check"), _("Spell Check"), uiManager);
+        initToggleAction(spellCheckAction_, config_.spellCheck, "lotus-spellcheck", "tools-check-spelling", _("Enable Spell Check"), _("Spell Check"), uiManager);
         initToggleAction(macroAction_, config_.macro, "lotus-macro", "document-edit", _("Enable Macro"), _("Macro"), uiManager);
         initToggleAction(capitalizeMacroAction_, config_.capitalizeMacro, "lotus-capitalizemacro", "format-text-uppercase", _("Capitalize Macro"), _("Capitalize Macro"),
                          uiManager);
-        initToggleAction(autoNonVnRestoreAction_, config_.autoNonVnRestore, "lotus-autonvnrestore", "edit-undo", _("Auto restore keys with invalid words"),
+        initToggleAction(autoNonVnRestoreAction_, config_.autoNonVnRestore, "lotus-autonvnrestore", "edit-undo", _("Auto Restore Keys With Invalid Wwords"),
                          _("Auto Non-VN Restore"), uiManager);
 
         reloadConfig();

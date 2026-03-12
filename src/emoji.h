@@ -19,7 +19,6 @@
 #include <vector>
 
 #include <fcitx/addonmanager.h>
-#include <Fcitx5/Module/fcitx-module/emoji/emoji_public.h>
 
 /**
  * @brief Emoji loader with fuzzy search capability.

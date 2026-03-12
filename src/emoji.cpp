@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+#include <emoji_public.h>
+
 EmojiLoader::EmojiLoader(fcitx::AddonManager* addonManager) {
     if (addonManager != nullptr) {
         emojiAddon_ = addonManager->addon("emoji", true);

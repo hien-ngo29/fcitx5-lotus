@@ -13,6 +13,7 @@ set_target_properties(lotus PROPERTIES OUTPUT_NAME "lotus")
 target_link_libraries(lotus
 	Fcitx5::Core
 	Fcitx5::Config
+  Fcitx5::Module::Emoji
 	Bamboo::Core
 	Pthread::Pthread
 	X11::X11

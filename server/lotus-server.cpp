@@ -67,12 +67,6 @@ void send_single_backspace() {
     if (write(uinput_fd_, ev, sizeof(ev)) < 0) {
         LotusLogger::instance().error("Failed to write to uinput: " + std::string(strerror(errno)));
     }
-
-    // Release
-    ev[0].value = 0;
-    if (write(uinput_fd_, ev, sizeof(ev)) < 0) {
-        LotusLogger::instance().error("Failed to write to uinput: " + std::string(strerror(errno)));
-    }
 }
 
 int open_restricted(const char* path, int flags, void* /*user_data*/) {

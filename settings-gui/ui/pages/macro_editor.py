@@ -26,7 +26,6 @@ from PySide6.QtGui import QIcon, QColor
 from PySide6.QtCore import Qt
 from i18n import _
 from core.dbus_handler import LotusDBusHandler
-import re
 from ui.pages.base_editor import BaseEditorPage
 from ui.pages.dynamic_settings import CardWidget
 
@@ -104,7 +103,7 @@ class MacroEditorPage(BaseEditorPage):
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
-        self.apply_table_style()  # Bơm CSS xịn vào đây
+        self.apply_table_style()  # Apply custom table styling
         self.table.cellClicked.connect(self.on_row_selected)
         content_layout.addWidget(self.table)
 
@@ -226,24 +225,9 @@ class MacroEditorPage(BaseEditorPage):
 
     def _is_invalid_macro(self, key: str) -> bool:
         """Checks if macro key contains spaces or non-letter characters."""
-        # Non-letters: characters that are not Unicode letters (L category)
-        # We also check for spaces explicitly, although they are not letters.
         if not key:
             return False
-        # Vietnamese letters are included in \w or isalpha() in Python 3.
-        # But for stricter "Macro" keys, we might want to avoid specific characters.
-        # The user said: "dấu cách hoặc các kí tự đặc biệt không thuộc chữ cái".
-        # [^ \w] might exclude some useful things if \w is just [a-zA-Z0-9_].
-        # In Python, isalpha() handles Vietnamese.
-        # Let's use a regex that finds anything that is NOT a letter.
-        # \W matches anything that is not [a-zA-Z0-9_].
-        # However, many people use digits in macros (e.g., "g2" -> "gì đó").
-        # If the user says "không thuộc chữ cái" (not letters), maybe they mean digits are okay?
-        # Usually, if it's "chữ cái", it excludes digits.
-        # Let's follow a strict interpretation: letters only + no spaces.
-        # Actually, let's allow digits too as they are common in macros.
-        # If I use isalnum(), it allows letters and digits.
-        # Let's use: not (key.isalnum() and ' ' not in key)
+        # Allow alphanumeric characters (including Unicode letters) and no spaces
         return not key.isalnum() or " " in key
 
     def _apply_row_highlight(self, row: int, key: str):
@@ -252,9 +236,9 @@ class MacroEditorPage(BaseEditorPage):
         color = Qt.transparent
         tooltip = ""
         if is_invalid:
-            # Use a soft red/orange for warning
+            # Use a soft red for warning
             color = QColor(Qt.red)
-            color.setAlpha(40)  # Very transparent
+            color.setAlpha(40)
             tooltip = _("Warning: Macro key should not contain spaces or special characters.")
 
         for col in range(self.table.columnCount()):
@@ -272,10 +256,6 @@ class MacroEditorPage(BaseEditorPage):
             val = self.table.item(row, 1).text() if self.table.item(row, 1) else ""
             rows.append((key, val))
 
-        # Sort criteria: (is_valid, key)
-        # This will put invalid (is_valid=False, which is 0) before valid (is_valid=True, which is 1)
-        # Wait, sorted by (is_valid, key) with invalid first:
-        # sorted(rows, key=lambda x: (not self._is_invalid_macro(x[0]), x[0]))
         rows.sort(key=lambda x: (not self._is_invalid_macro(x[0]), x[0].lower()))
 
         self.blockSignals(True)

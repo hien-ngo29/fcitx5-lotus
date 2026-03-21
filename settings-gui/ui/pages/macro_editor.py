@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QCheckBox,
 )
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QColor
 from PySide6.QtCore import Qt
 from i18n import _
 from core.dbus_handler import LotusDBusHandler
@@ -93,6 +93,16 @@ class MacroEditorPage(BaseEditorPage):
         input_layout.addWidget(self.btn_add)
         content_layout.addLayout(input_layout)
 
+        # 1b. Search Bar
+        search_layout = QHBoxLayout()
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText(_("Search macros..."))
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self.on_search_changed)
+        search_layout.addWidget(QLabel(_("Search:")))
+        search_layout.addWidget(self.search_input)
+        content_layout.addLayout(search_layout)
+
         # 2. Table Area
         self.table = QTableWidget(0, 2)
         self.table.setHorizontalHeaderLabels([_("Abbreviation"), _("Expanded Text")])
@@ -103,7 +113,7 @@ class MacroEditorPage(BaseEditorPage):
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
-        self.apply_table_style()  # Bơm CSS xịn vào đây
+        self.apply_table_style()  # Apply custom table styling
         self.table.cellClicked.connect(self.on_row_selected)
         content_layout.addWidget(self.table)
 
@@ -151,7 +161,8 @@ class MacroEditorPage(BaseEditorPage):
             self.table.setRowCount(0)
             data = self.dbus.get_sub_config_list("lotus-macro", "Macro")
             for item in data:
-                self.upsert_row(item.get("Key", ""), item.get("Value", ""))
+                self.upsert_row(item.get("Key", ""), item.get("Value", ""), sort=False)
+            self.sort_invalid_to_top()
         finally:
             self.blockSignals(False)
 
@@ -200,11 +211,15 @@ class MacroEditorPage(BaseEditorPage):
         if not quiet:
             QMessageBox.information(self, _("Success"), _("Macros saved successfully."))
 
-    def upsert_row(self, key: str, value: str):
+    def upsert_row(self, key: str, value: str, sort: bool = True):
         # Update existing
         for row in range(self.table.rowCount()):
             if self.table.item(row, 0) and self.table.item(row, 0).text() == key:
                 self.table.item(row, 1).setText(value)
+                self._apply_row_highlight(row, key)
+                if sort:
+                    self.sort_invalid_to_top()
+                self.on_search_changed()  # Re-apply filter
                 self.update_button_states()
                 return
 
@@ -213,8 +228,70 @@ class MacroEditorPage(BaseEditorPage):
         self.table.insertRow(row)
         self.table.setItem(row, 0, QTableWidgetItem(key))
         self.table.setItem(row, 1, QTableWidgetItem(value))
+        self._apply_row_highlight(row, key)
+        if sort:
+            self.sort_invalid_to_top()
+        self.on_search_changed()  # Re-apply filter
         self.update_button_states()
         self._on_item_changed()
+
+    def _is_invalid_macro(self, key: str) -> bool:
+        """Checks if macro key contains spaces or non-letter characters."""
+        if not key:
+            return False
+        # Allow alphanumeric characters (including Unicode letters) and no spaces
+        return not key.isalnum() or " " in key
+
+    def _apply_row_highlight(self, row: int, key: str):
+        """Applies highlighting to rows with invalid keys."""
+        is_invalid = self._is_invalid_macro(key)
+        color = Qt.transparent
+        tooltip = ""
+        if is_invalid:
+            # Use a soft red for warning
+            color = QColor(Qt.red)
+            color.setAlpha(40)
+            tooltip = _("Warning: Macro key should not contain spaces or special characters.")
+
+        for col in range(self.table.columnCount()):
+            item = self.table.item(row, col)
+            if item:
+                item.setBackground(color)
+                item.setToolTip(tooltip)
+
+    def sort_invalid_to_top(self):
+        """Moves all invalid entries to the top, then sorts by key."""
+        # We'll extract all items, sort them, and put them back.
+        rows = []
+        for row in range(self.table.rowCount()):
+            key = self.table.item(row, 0).text() if self.table.item(row, 0) else ""
+            val = self.table.item(row, 1).text() if self.table.item(row, 1) else ""
+            rows.append((key, val))
+
+        rows.sort(key=lambda x: (not self._is_invalid_macro(x[0]), x[0].lower()))
+
+        self.blockSignals(True)
+        self.table.setRowCount(0)
+        for key, val in rows:
+            row_idx = self.table.rowCount()
+            self.table.insertRow(row_idx)
+            self.table.setItem(row_idx, 0, QTableWidgetItem(key))
+            self.table.setItem(row_idx, 1, QTableWidgetItem(val))
+            self._apply_row_highlight(row_idx, key)
+        self.on_search_changed()  # Re-apply filter
+        self.blockSignals(False)
+
+    def on_search_changed(self):
+        """Filters the table rows based on the search input."""
+        search_text = self.search_input.text().lower()
+        for row in range(self.table.rowCount()):
+            key_item = self.table.item(row, 0)
+            val_item = self.table.item(row, 1)
+            key = key_item.text().lower() if key_item else ""
+            val = val_item.text().lower() if val_item else ""
+            
+            # Show row if either key or value matches search text
+            self.table.setRowHidden(row, search_text not in key and search_text not in val)
 
     def on_add(self):
         key = self.input_key.text().strip()

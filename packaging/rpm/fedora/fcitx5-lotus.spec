@@ -2,7 +2,7 @@
 %global optflags %(echo "%{optflags}" | sed 's/-g[^ ]*//g')
 
 Name:           fcitx5-lotus
-Version:        1.6.0
+Version:        1.6.1
 Release:        1
 Summary:        Vietnamese input method for fcitx5
 License:        GPL-3.0-or-later
@@ -38,7 +38,7 @@ Vietnamese input method for fcitx5
 %setup -q
 
 %build
-%cmake
+%cmake -DINSTALL_OPENRC=OFF
 %cmake_build
 
 %install
@@ -58,7 +58,6 @@ Vietnamese input method for fcitx5
 
 %{_prefix}/lib/modules-load.d/fcitx5-lotus.conf
 %{_unitdir}/fcitx5-lotus-server@.service
-%{_sysconfdir}/init.d/fcitx5-lotus
 %{_prefix}/lib/sysusers.d/lotus.conf
 %{_prefix}/lib/udev/rules.d/99-lotus.rules
 
@@ -153,7 +152,7 @@ fi
 %systemd_postun_with_restart fcitx5-lotus-server@.service
 
 %changelog
-* Mon Mar 23 2026 Nguyen Hoang Ky <nhktmdzhg@gmail.com> - 1.6.0-1
+* Mon Mar 23 2026 Nguyen Hoang Ky <nhktmdzhg@gmail.com> - 1.6.1-1
 - Add mode manager
 - Add OpenRC support
 - Macro validate, search macro

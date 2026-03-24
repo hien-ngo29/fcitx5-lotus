@@ -236,15 +236,16 @@ namespace fcitx {
     }
 
     void LotusState::handleEmojiMode(KeyEvent& keyEvent) {
-        if (keyEvent.key().hasModifier()) {
+        const KeySym currentSym      = keyEvent.rawKey().sym();
+        bool         isCtrlBackspace = isBackspace(currentSym) && (keyEvent.rawKey().states() & KeyState::Ctrl);
+
+        if (keyEvent.key().hasModifier() && !isCtrlBackspace) {
             keyEvent.forward();
             return;
         }
 
-        const KeySym currentSym = keyEvent.rawKey().sym();
-
-        auto         baseList   = ic_->inputPanel().candidateList();
-        auto         commonList = std::dynamic_pointer_cast<CommonCandidateList>(baseList);
+        auto baseList   = ic_->inputPanel().candidateList();
+        auto commonList = std::dynamic_pointer_cast<CommonCandidateList>(baseList);
         if (commonList && currentSym >= FcitxKey_1 && currentSym <= FcitxKey_9) {
             int offset      = currentSym - FcitxKey_1;
             int globalIndex = (commonList->currentPage() * commonList->pageSize()) + offset;
@@ -329,9 +330,13 @@ namespace fcitx {
 
         if (isBackspace(currentSym)) {
             if (!emojiBuffer_.empty()) {
-                emojiBuffer_.pop_back();
-                while (!emojiBuffer_.empty() && (emojiBuffer_.back() & 0xC0) == 0x80) {
+                if (isCtrlBackspace) {
+                    emojiBuffer_.clear();
+                } else {
                     emojiBuffer_.pop_back();
+                    while (!emojiBuffer_.empty() && (emojiBuffer_.back() & 0xC0) == 0x80) {
+                        emojiBuffer_.pop_back();
+                    }
                 }
                 keyEvent.filterAndAccept();
             } else {

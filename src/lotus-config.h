@@ -132,7 +132,7 @@ namespace fcitx {
      */
     struct TimeFormatAnnotation : public StringListAnnotation {
         TimeFormatAnnotation() {
-            list_ = {"%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"};
+            list_ = {"%H:%M", "%H:%M:%S", "%I:%M:%S %p", "%I:%M %p", ""};
         }
     };
 
@@ -141,7 +141,7 @@ namespace fcitx {
      */
     struct DateFormatAnnotation : public StringListAnnotation {
         DateFormatAnnotation() {
-            list_ = {"%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%d", "%d/%m/%y", "%y-%m-%d"};
+            list_ = {"%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%d", "%d/%m/%y", "%y-%m-%d", ""};
         }
     };
 
